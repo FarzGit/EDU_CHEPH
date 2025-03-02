@@ -1,13 +1,43 @@
-import React from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Upload } from 'lucide-react';
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Enroll = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    // Handle form submission
+  const onSubmit = async (data: any) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Replace with your actual API endpoint
+      const response = await axios.post('https://edu-cephal-backend.onrender.com/users/enroll', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Handle successful response
+      console.log('Enrollment successful:', response.data);
+      toast.success('Enrollment submitted successfully! We will contact you soon.');
+      
+      // Reset form after successful submission
+      reset();
+      
+    } catch (error: any) {
+      console.error('Enrollment error:', error);
+      
+      // Display error message based on the API response or a generic message
+      const errorMessage = error.response?.data?.message || 'Failed to submit enrollment. Please try again later.';
+      toast.error(errorMessage);
+      
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -23,34 +53,19 @@ const Enroll = () => {
             {/* Personal Information */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">Personal Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name *
+                    Full Name *
                   </label>
                   <input
                     type="text"
                     id="firstName"
-                    {...register("firstName", { required: "First name is required" })}
+                    {...register("name", { required: "Full name is required" })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                   {errors.firstName && (
                     <p className="mt-1 text-sm text-red-600">{errors.firstName.message as string}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    {...register("lastName", { required: "Last name is required" })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastName.message as string}</p>
                   )}
                 </div>
               </div>
@@ -88,7 +103,7 @@ const Enroll = () => {
                   <input
                     type="tel"
                     id="phone"
-                    {...register("phone", { required: "Phone number is required" })}
+                    {...register("mobile", { required: "Phone number is required" })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                   {errors.phone && (
@@ -100,38 +115,7 @@ const Enroll = () => {
 
             {/* Educational Background */}
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Educational Background</h2>
               <div className="space-y-6">
-                <div>
-                  <label htmlFor="lastSchool" className="block text-sm font-medium text-gray-700 mb-1">
-                    Last School Attended *
-                  </label>
-                  <input
-                    type="text"
-                    id="lastSchool"
-                    {...register("lastSchool", { required: "School name is required" })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  {errors.lastSchool && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastSchool.message as string}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-1">
-                    Grade/Percentage *
-                  </label>
-                  <input
-                    type="text"
-                    id="grade"
-                    {...register("grade", { required: "Grade is required" })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  {errors.grade && (
-                    <p className="mt-1 text-sm text-red-600">{errors.grade.message as string}</p>
-                  )}
-                </div>
-
                 <div>
                   <label htmlFor="stream" className="block text-sm font-medium text-gray-700 mb-1">
                     Preferred Stream *
@@ -154,54 +138,31 @@ const Enroll = () => {
                 </div>
               </div>
             </div>
-
-            {/* Document Upload */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Documents</h2>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Academic Transcripts *
-                  </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                    <div className="space-y-1 text-center">
-                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                      <div className="flex text-sm text-gray-600">
-                        <label
-                          htmlFor="transcripts"
-                          className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                        >
-                          <span>Upload a file</span>
-                          <input
-                            id="transcripts"
-                            type="file"
-                            className="sr-only"
-                            {...register("transcripts", { required: "Transcripts are required" })}
-                          />
-                        </label>
-                        <p className="pl-1">or drag and drop</p>
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        PDF, DOC up to 10MB
-                      </p>
-                    </div>
-                  </div>
-                  {errors.transcripts && (
-                    <p className="mt-1 text-sm text-red-600">{errors.transcripts.message as string}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
+            
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300"
+              disabled={isSubmitting}
+              className={`w-full text-white py-3 px-4 rounded-md transition duration-300 
+                ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
             >
-              Submit Application
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </button>
           </form>
         </div>
       </div>
+      
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

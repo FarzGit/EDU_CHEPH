@@ -1,9 +1,62 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    mobile: '',
+    message: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData({
+      ...formData,
+      [id]: value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.mobile) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Replace with your actual API endpoint
+      const response = await axios.post('https://edu-cephal-backend.onrender.com/users/contact', formData);
+      
+      if (response.status === 200) {
+        toast.success('Message sent successfully! We will contact you soon.');
+        // Reset form after successful submission
+        setFormData({
+          name: '',
+          email: '',
+          mobile: '',
+          message: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error(error.response?.data?.message || 'Failed to send message. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
+      <ToastContainer position="top-right" autoClose={5000} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
@@ -14,60 +67,73 @@ const Contact = () => {
           {/* Contact Form */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your name"
+                  required
                 />
               </div>
               
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   id="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="your@email.com"
+                  required
                 />
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="tel"
-                  id="phone"
+                  type="mobile"
+                  id="mobile"
+                  value={formData.mobile}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Your phone number"
+                  placeholder="1234567890"
+                  required
                 />
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
+                  Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="message"
                   rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="How can we help you?"
+                  required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 disabled:bg-blue-400"
               >
-                Send Message
+                {loading ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
@@ -105,17 +171,6 @@ const Contact = () => {
                     <p className="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
                     <p className="text-gray-600">Saturday: 9:00 AM - 1:00 PM</p>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Map */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-semibold mb-6">Location</h2>
-              <div className="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg">
-                {/* Add your map integration here */}
-                <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Map integration will be added here</p>
                 </div>
               </div>
             </div>
